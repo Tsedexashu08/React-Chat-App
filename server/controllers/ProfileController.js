@@ -3,7 +3,7 @@ import User from "../models/User.js";
 
 export const RegisterUser = async (req, res) => {
     try {
-        const { username, email, password, profile_picture, Tel} = req.body;
+        const { username, email, password, profile_picture, Tel } = req.body;
 
         // Validate input
         if (!username || !email || !password) {
@@ -20,8 +20,30 @@ export const RegisterUser = async (req, res) => {
 
         // Send response
         res.status(201).json({ message: "User registered successfully", user: newUser });
-    // Redirect to another route
-    // res.redirect('/login');
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+}
+
+export const Login = async (req, res) => {
+    try {
+        const { username, password } = req.body;
+
+        // Validate input
+        if (!username || !password) {
+            return res.status(400).json({ error: "Username and password are required" });
+        }
+
+        // Check if user exists and password matches
+        const user = await User.findOne({ where: { username } });
+
+        if (user && user.password === password) {
+            res.status(200).json({ message: "Login successful" ,user_id:user.user_id,profile_picture: user.profile_picture});
+        } else {
+            res.status(400).json({ error: "Invalid username or password" });
+        }
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Internal server error" });

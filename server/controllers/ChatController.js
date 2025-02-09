@@ -1,7 +1,9 @@
 import sequelize from "../database.js";
 import User from "../models/User.js";
+import Chat from "../models/Chat.js";
+import Chat_Messages from "../models/ChatMessages.js";
 
-export const FetchUsers = async (req,res) =>{
+export const FetchUsers = async (req, res) => {
     try {
         const users = await User.findAll();
         res.status(200).json(users);
@@ -10,3 +12,70 @@ export const FetchUsers = async (req,res) =>{
     }
 
 }
+export const FetchUsersWithChats = async (req, res) => {
+    try {
+        const chats = await Chat.findAll({
+            include: [
+                { model: User, as: 'User1' }, // Include the first user
+                { model: User, as: 'User2' }, // Include the second user
+                { model: ChatMessages, as: 'Messages' } // Include messages associated with the chat
+            ]
+        });
+        res.status(200).json(chats);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const FetchCurrentUser = async (req, res) => {
+    try {
+        const userId = req.body.id; // Use req.body to get the ID
+        const currentUser = await User.findOne({ where: { user_id: userId } });
+        res.status(200).json(currentUser);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+// InitiateChat function
+export const InitiateChat = async (user1Id, user2Id) => {
+    try {
+        const chat = await Chat.findOne({
+            where: {
+                user_id_1: user1Id,
+                user_id_2: user2Id
+            }
+        });
+
+        if (chat) {
+            return { chatId: chat.chat_id }; 
+        } else {
+            const newChat = await Chat.create({
+                user_id_1: user1Id, 
+                user_id_2: user2Id
+            });
+            return { chatId: newChat.chat_id }
+        }
+    } catch (error) {
+        throw new Error(error.message); 
+    }
+};
+
+
+export const sendMessage = async (req, res) => {
+    try {
+        const { user1Id, user2Id, msgContent } = req.body; // Use consistent naming
+        const chatResponse = await InitiateChat(user1Id, user2Id); // Pass correct parameters
+        const chatId = chatResponse.chatId;
+
+        const newMessage = await Chat_Messages.create({
+            chat_id: chatId,
+            sender_id: user1Id,
+            content: msgContent // Use consistent naming
+        });
+
+        res.status(201).json({ messageId: newMessage.id, chatId: chatId });
+    } catch (error) {
+        console.error('Error sending message:', error); // Log the error for debugging
+        res.status(500).json({ error: error.message }); // Handle any errors
+    }
+};
