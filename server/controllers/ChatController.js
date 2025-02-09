@@ -36,7 +36,32 @@ export const FetchCurrentUser = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 }
-// InitiateChat function
+export const StartChat = async (req, res) => {
+    try {
+        const { user1Id, user2Id } = req.body;
+
+        const chat = await Chat.findOne({
+            where: {
+                user_id_1: user1Id,
+                user_id_2: user2Id
+            }
+        });
+
+        if (chat) {
+            return res.status(200).json({ chatId: chat.chat_id });
+        } else {
+            const newChat = await Chat.create({
+                user_id_1: user1Id,
+                user_id_2: user2Id
+            });
+            return res.status(200).json({ chatId: newChat.chat_id });
+        }
+    } catch (error) {
+        console.error('Error in StartChat:', error.message); 
+        return res.status(500).json({ error: error.message });
+    }
+};
+
 export const InitiateChat = async (user1Id, user2Id) => {
     try {
         const chat = await Chat.findOne({
@@ -47,35 +72,35 @@ export const InitiateChat = async (user1Id, user2Id) => {
         });
 
         if (chat) {
-            return { chatId: chat.chat_id }; 
+            return { chatId: chat.chat_id };
         } else {
             const newChat = await Chat.create({
-                user_id_1: user1Id, 
+                user_id_1: user1Id,
                 user_id_2: user2Id
             });
             return { chatId: newChat.chat_id }
         }
     } catch (error) {
-        throw new Error(error.message); 
+        throw new Error(error.message);
     }
 };
 
 
 export const sendMessage = async (req, res) => {
     try {
-        const { user1Id, user2Id, msgContent } = req.body; // Use consistent naming
-        const chatResponse = await InitiateChat(user1Id, user2Id); // Pass correct parameters
+        const { user1Id, user2Id, msgContent } = req.body;
+        const chatResponse = await InitiateChat(user1Id, user2Id);
         const chatId = chatResponse.chatId;
 
         const newMessage = await Chat_Messages.create({
             chat_id: chatId,
             sender_id: user1Id,
-            content: msgContent // Use consistent naming
+            content: msgContent
         });
 
         res.status(201).json({ messageId: newMessage.id, chatId: chatId });
     } catch (error) {
-        console.error('Error sending message:', error); // Log the error for debugging
-        res.status(500).json({ error: error.message }); // Handle any errors
+        console.error('Error sending message:', error);
+        res.status(500).json({ error: error.message });
     }
 };

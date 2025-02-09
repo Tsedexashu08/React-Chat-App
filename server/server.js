@@ -9,11 +9,11 @@ import Messages from "./models/Messages.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
 import http from "http";
-import { Server } from "socket.io"; // Import Socket.IO Server
+import { Server } from "socket.io"; 
 import cors from 'cors';
 
 const app = express();
-const server = http.createServer(app); // Create HTTP server
+const server = http.createServer(app); 
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:3000"
@@ -55,23 +55,26 @@ const startServer = async () => {
         await sequelize.sync();
         console.log("Connection successful!");
 
-        // Start the Express server
+        
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
 
-        // Set up Socket.IO connection
+    
+
         io.on('connection', (socket) => {
             console.log('A user connected:', socket.id);
 
-            // Handle incoming messages
-            socket.on('chat message', (msg) => {
-                // Broadcast the message to all connected clients
-                socket.broadcast.emit('recieve message', msg);
-              
+            socket.on("join chat", (chatId) => {
+                socket.join(chatId);
+                console.log(`User ${socket.id} joined chat ${chatId}`);
             });
 
-            // Handle disconnection
+            socket.on('chat message', ({ chatId, msg }) => {
+                socket.to(chatId).emit('receive message', { msg });
+                console.log(`Message sent to chat ${chatId}: ${msg}`);
+            });
+
             socket.on('disconnect', () => {
                 console.log('User disconnected:', socket.id);
             });
