@@ -48,13 +48,13 @@ export const StartChat = async (req, res) => {
         });
 
         if (chat) {
-            return res.status(200).json({ chatId: chat.chat_id });
+            return res.status(200).json({ chat: chat.chat_id });
         } else {
             const newChat = await Chat.create({
                 user_id_1: user1Id,
                 user_id_2: user2Id
             });
-            return res.status(200).json({ chatId: newChat.chat_id });
+            return res.status(200).json({ chat: newChat.chat_id });
         }
     } catch (error) {
         console.error('Error in StartChat:', error.message); 
