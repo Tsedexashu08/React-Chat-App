@@ -9,11 +9,11 @@ import Messages from "./models/Messages.js";
 import { fileURLToPath } from 'url';
 import path from 'path';
 import http from "http";
-import { Server } from "socket.io"; 
+import { Server } from "socket.io";
 import cors from 'cors';
 
 const app = express();
-const server = http.createServer(app); 
+const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
         origin: "http://localhost:3000"
@@ -50,20 +50,32 @@ ChatMessages.belongsTo(User, { foreignKey: 'sender_id', as: 'Sender' });
 
 const PORT = process.env.PORT || 3001;
 
+const onlineUsers = new Map(); // Storing with socket id to track online status....? user_id -> socket.id mapping
+
+
 const startServer = async () => {
     try {
         await sequelize.sync();
         console.log("Connection successful!");
 
-        
+
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
 
-    
+
 
         io.on('connection', (socket) => {
             console.log('A user connected:', socket.id);
+
+            socket.on("user_connected", (userId) => {
+                onlineUsers.set(userId, socket.id);
+                // Broadcasting to all z clients that user is online
+                io.emit("user_status", {
+                    userId: userId,
+                    status: "online"
+                });
+            });
 
             socket.on("join chat", (chatId) => {
                 socket.join(chatId);
@@ -74,8 +86,25 @@ const startServer = async () => {
                 socket.to(chatId).emit('receive message', { msg });
                 console.log(`Message sent to chat ${chatId}: ${msg}`);
             });
-
+            // Handle disconnection
             socket.on('disconnect', () => {
+                // Find user id associated with this socket
+                let disconnectedUser;
+                for (let [userId, socketId] of onlineUsers.entries()) {
+                    if (socketId === socket.id) {
+                        disconnectedUser = userId;
+                        break;
+                    }
+                }
+
+                if (disconnectedUser) {
+                    onlineUsers.delete(disconnectedUser);
+                    // Broadcast to all clients that user is offline
+                    io.emit("user_status", {
+                        userId: disconnectedUser,
+                        status: "offline"
+                    });
+                }
                 console.log('User disconnected:', socket.id);
             });
         });
