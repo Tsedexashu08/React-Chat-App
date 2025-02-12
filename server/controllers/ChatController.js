@@ -27,7 +27,7 @@ export const FetchUsersWithChats = async (req, res) => {
     }
 }
 
-export const FetchCurrentUser = async (req, res) => {
+export const FetchUser = async (req, res) => {
     try {
         const userId = req.body.id; // Use req.body to get the ID
         const currentUser = await User.findOne({ where: { user_id: userId } });
