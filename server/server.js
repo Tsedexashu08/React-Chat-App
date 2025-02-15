@@ -83,7 +83,12 @@ const startServer = async () => {
             });
 
             socket.on('chat message', ({ chatId, msg }) => {
-                socket.to(chatId).emit('receive message', { msg });
+                const message = {
+                    sender_id: socket.userId, // Include sender_id
+                    content: msg,
+                    timestamp: new Date().toISOString()
+                };
+                socket.to(chatId).emit('receive message', message);
                 console.log(`Message sent to chat ${chatId}: ${msg}`);
             });
             // Handle disconnection

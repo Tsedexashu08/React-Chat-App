@@ -94,7 +94,7 @@ export const sendMessage = async (req, res) => {
 
         const newMessage = await Chat_Messages.create({
             chat_id: chatId,
-            sender_id: user2Id,
+            sender_id: user1Id,
             content: msgContent
         });
 

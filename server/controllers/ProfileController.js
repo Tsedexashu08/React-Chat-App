@@ -49,3 +49,13 @@ export const Login = async (req, res) => {
         res.status(500).json({ error: "Internal server error" });
     }
 }
+
+export const FetchUser = async (req, res) => {
+    try {
+        const userId = req.params.id; 
+        const currentUser = await User.findOne({ where: { user_id: userId } });
+        res.status(200).json(currentUser);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
