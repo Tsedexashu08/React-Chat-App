@@ -1,0 +1,21 @@
+.StartMessaging{
+display: flex;
+width: 100dvw;
+height: 100vh;
+
+}
+.start{
+    display: grid;
+    align-items: center;
+    justify-content: center;
+    background-color: #151f28;
+    text-align: center;
+    width: 100%;
+}
+.start span{
+    border-radius: 20px;
+    padding: 10px;
+    color: #cccc;
+    font-weight: bolder;
+    background-color: rgba(12, 19, 52, 0.25);
+}

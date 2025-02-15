@@ -1,0 +1,66 @@
+.card {
+    width: 500px;
+    height: 650px;
+    padding: 5px;
+    background-color: #17212b;
+    ;
+    box-shadow: rgba(0, 0, 0.5, 0.4) 10px 2px 4px, rgba(0, 0.5, 0, 0.3) 0px 7px 13px -3px, rgba(0, 0, 0.5, 0.2) 0px -3px 0px inset;
+}
+
+.card .profilepic {
+    border-radius: 50%;
+    border: double 3px rgba(255, 255, 255, 0.8);
+    object-fit: cover;
+    object-position: center;
+    overflow: hidden;
+    margin: auto;
+    width: 250px;
+    height: 250px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.profilepic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.profilepic:hover {
+    border-color: rgba(255, 255, 255, 1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    transform: translateY(-2px);
+}
+
+.profilepic:hover img {
+    transform: scale(1.05);
+}
+
+.card table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.card th {
+    color: rgba(255, 255, 255, 0.9);
+    padding: 12px;
+    text-align: left;
+    font-weight: 900;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.card tr, td {
+    padding: 12px;
+    color: rgba(255, 255, 255, 0.7);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 14px;
+    transition: background 0.3s ease;
+    font-weight: 100;
+}

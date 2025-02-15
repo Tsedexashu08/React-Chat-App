@@ -1,0 +1,61 @@
+.chatCard{
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    border-bottom: 1px solid #ccc;
+    background-color: #17212b;
+    border: #111b23 1px solid;
+    gap: 2%;
+    width: 25dvw;
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+}
+.chatCard:hover{
+    background-color: #111b23;
+}
+.chatCard img{
+    object-fit: cover;
+    object-position: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 20px;
+}
+.chatCard .chatCard__info{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    margin-left: 10px;
+    width: fit-content;
+    gap: 5px;
+}
+.chatCard .chatCard__info h3{
+    margin: 0;
+    font-size: 1.2rem;
+    color: white;
+    display:flex ;
+    width: fit-content;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 55%;
+    white-space: nowrap;
+}
+.chatCard .chatCard__info p{
+    margin: 0;
+    font-size: .9rem;
+    color: #ccc;
+}
+ .timestamp{
+    color: #ccc;
+    font-size: small;
+    font-weight: 400;
+}
+.chatCardlink{
+    text-decoration: none;
+}
+
+
+
+
+

@@ -1,0 +1,107 @@
+.ChatBox {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background-color: #f5f5f5;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: #111b23 1px solid;
+}
+
+.chat_header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    background-color: #17212b;
+    font-family: 'Courier New', Courier, monospace;
+    color: white;
+    padding-left: 10px;
+    padding-bottom: 1%;
+    text-align: left;
+    height: 6%;
+}
+
+.chat_header h3 {
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: left;
+    margin: 0;
+    padding: 6%;
+    margin-left: -32%;
+}
+
+
+.chat {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-image: url('/src/telegram-bg.png');
+    object-fit: cover;
+    object-position: center;
+}
+
+.chat_header_info p {
+    margin: 0;
+    padding: 0;
+    color: #888;
+}
+
+.chat_header_info {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    margin-left: 2px;
+}
+
+.chat_footer {
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    background-color: #17212b;
+    border-top: 1px solid #111b23;
+}
+
+.chat_footer input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    outline: none;
+    border-radius: 20px;
+    margin-right: 10px;
+    background-color: #17212b;
+    color: white;
+}
+
+.chat_footer input::placeholder {
+    color: #888;
+}
+
+
+
+.chat_footer button:hover {
+    transform: translate(1px, 1px);
+}
+
+
+.chat {
+    position: relative;
+
+    min-height: 100px;
+}
+
+.chat h1 {
+    border-radius: 20px;
+    padding: 10px;
+    color: #cccc;
+    font-weight: bolder;
+    background-color: rgba(12, 19, 52, 0.25);
+    width: fit-content;
+
+    /* Center horizontally and vertically */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
