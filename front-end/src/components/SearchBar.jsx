@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 
 function SearchBar() {
 
-  const id = parseInt(sessionStorage.getItem('auth_id'),10)
+  const id = parseInt(sessionStorage.getItem('auth_id'), 10)
   return (
     <div className={style.searchBar}>
       <div className={style.searchbar}>

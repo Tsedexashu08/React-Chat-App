@@ -1,12 +1,12 @@
-// Added PropTypes for type checking
 import PropTypes from 'prop-types';
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, use } from 'react';
 import style from '../css/components/ChatBox.module.css';
 import { IncomingMessage, OutgoingMessage } from '../components/Message';
 import io from 'socket.io-client';
-import { useParams, useOutletContext } from 'react-router-dom';
+import { useParams, useOutletContext, Link } from 'react-router-dom';
+import MessageWithFile from './MessageWithFile';
 
-// Added environment variable for socket URL
+
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:3001';
 
 function ChatBox() {
@@ -15,6 +15,7 @@ function ChatBox() {
     const { messages, setMessages } = useOutletContext();
     const user1Id = parseInt(sessionStorage.getItem('auth_id'), 10);
     const { userId, username, chatId, onlineStatus } = useParams();
+    const id = parseInt(userId, 10)
     const [chatRoomId, setChatRoomId] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -49,6 +50,14 @@ function ChatBox() {
 
         newSocket.on('connect', () => {
             console.log('Socket connected');
+        });
+        // Add listener for file messages
+        newSocket.on("receive file", (fileMessage) => {
+            setMessages(prevMessages => [...prevMessages, {
+                sender_id: fileMessage.sender_id,
+                content: `File: ${fileMessage.fileData.name}`,
+                fileData: fileMessage.fileData
+            }]);
         });
 
         newSocket.on('error', (error) => {
@@ -132,11 +141,82 @@ function ChatBox() {
         return <div className={style.error}>{error}</div>;
     }
 
+    const handleFileUpload = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // File size validation (5MB limit)
+        const maxSize = 5 * 1024 * 1024;
+        if (file.size > maxSize) {
+            setError('File size must be less than 5MB');
+            return;
+        }
+
+        // Allowed file types
+        const allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'application/pdf',
+            'text/plain',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+
+        if (!allowedTypes.includes(file.type)) {
+            setError('File type not supported');
+            return;
+        }
+
+        try {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const fileData = {
+                    name: file.name,
+                    type: file.type,
+                    data: reader.result
+                };
+
+                // Create file message object
+                const fileMessage = {
+                    sender_id: user1Id,
+                    chatId: chatId,
+                    fileData: fileData
+                };
+
+                // Emit file through socket
+                socket.emit('file share', fileMessage);
+
+                // Add to local messages
+                setMessages(prevMessages => [...prevMessages, {
+                    sender_id: user1Id,
+                    content: `File: ${file.name}`,
+                    fileData: fileData
+                }]);
+
+                // Save file message to database if needed...ti be done if i feel like it..
+
+            };
+
+            reader.onerror = () => {
+                setError('Error reading file');
+            };
+
+            reader.readAsDataURL(file);
+        } catch (error) {
+            setError('Error processing file');
+            console.error('File upload error:', error);
+        }
+    };
+
+
+
+
     return (
         <div className={style.ChatBox}>
             <div className={style.chat_header}>
                 <div className={style.chat_header_info}>
-                    <h3>{username}</h3>
+                    <Link to={`/startMessaging/profile/${id}`} className={style.chatinfo}> <h3>{username}</h3></Link>
                     <p style={{ color: onlineStatus === 'online' ? '#0088cc' : '#ccc' }}>
                         <span
                             className={style.status_indicator}
@@ -154,18 +234,27 @@ function ChatBox() {
                 </div>
             </div>
             <section className={style.chat}>
-                {!loading ? (
-                    messages?.map((message, index) => (
-                        message.sender_id === parseInt(user1Id, 10) ? (
-                            <OutgoingMessage key={index} message={message.content} />
-                        ) : (
-                            <IncomingMessage key={index} message={message.content} userId={userId} />
-                        ))
+                {messages?.map((message, index) => (
+                    message.sender_id === parseInt(user1Id, 10) ? (
+                        <OutgoingMessage
+                            key={index}
+                            message={message.content}
+                        >
+                            <MessageWithFile message={message} />
+                        </OutgoingMessage>
+                    ) : (
+                        <IncomingMessage
+                            key={index}
+                            userId={userId}
+                            message={message.content}
+                        >
+                            <MessageWithFile message={message} />
+                        </IncomingMessage>
                     )
-                ) : (
-                    <h1>Loading...</h1>
-                )}
+                ))}
+
             </section>
+
 
             <form onSubmit={sendMessage} className={style.chat_footer}>
                 <input
@@ -175,6 +264,17 @@ function ChatBox() {
                     onChange={(e) => setMsg(e.target.value)}
                     disabled={loading}
                 />
+                <input
+                    type="file"
+                    onChange={handleFileUpload}
+                    style={{ display: 'none' }}
+                    id="file-upload"
+                />
+                <label htmlFor="file-upload">
+                    <span role="button" style={{ cursor: 'pointer', marginRight: '10px' }}>
+                        📎
+                    </span>
+                </label>
                 <button
                     type="submit"
                     style={{ color: "white", background: "transparent" }}
@@ -183,7 +283,7 @@ function ChatBox() {
                     Send
                 </button>
             </form>
-        </div>
+        </div >
     );
 }
 

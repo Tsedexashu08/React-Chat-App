@@ -3,9 +3,10 @@ import style from '../css/components/Messages.module.css';
 import img from '../propic.png';
 import { data } from 'react-router-dom';
 
-
-function IncomingMessage(props) {
+// Correct way to destructure props for functional components
+function IncomingMessage({ children, userId, message }) {  
     const [profile_picture, setProfilePicture] = useState('')
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -14,7 +15,7 @@ function IncomingMessage(props) {
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ id: props.userId })
+                    body: JSON.stringify({ id: userId })
                 });
 
                 const data = await response.json();
@@ -26,10 +27,10 @@ function IncomingMessage(props) {
             }
         };
 
-        if (props.userId) {
+        if (userId) {
             fetchUserData();
         }
-    }, [props.userId]);
+    }, [userId]);
 
     return (
         <div className={style.incoming_msg}>
@@ -38,17 +39,28 @@ function IncomingMessage(props) {
                 src={profile_picture ? `http://localhost:3001/public/${profile_picture}` : img}
                 alt="user avatar"
             />
-            <div className={style.message}>{props.message}</div>
+            <div className={style.message}>
+                {message} 
+                {children}
+            </div>
         </div>
     );
 }
 
-function OutgoingMessage(props) {
-    const currentUserProfilePicture = (sessionStorage.getItem('auth_profilepic'));//cause outgoing msgs are obviously from the current user.
+function OutgoingMessage({ children, message }) {  // Direct destructuring
+    const currentUserProfilePicture = sessionStorage.getItem('auth_profilepic');
+
     return (
         <div className={style.outgoing_msg}>
-            <div className={style.outgoing_message}>{props.message}</div>
-            <img src={`http://localhost:3001/public/${currentUserProfilePicture}`} alt="User Avatar" className={style.avatar} />
+            <div className={style.outgoing_message}>
+                {message}
+                {children}
+            </div>
+            <img
+                src={`http://localhost:3001/public/${currentUserProfilePicture}`}
+                alt="User Avatar"
+                className={style.avatar}
+            />
         </div>
     );
 }

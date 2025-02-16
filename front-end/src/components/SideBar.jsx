@@ -20,13 +20,13 @@ function SideBar({ onChatSelect }) {
     useEffect(() => {
         const socket = io("http://localhost:3001");
 
-        // When component mounts, emit user connected event
+
         socket.emit("user_connected", currentUserId);
 
-        // Listen for status changes
+
         socket.on("user_status", (data) => {
             const { userId, status } = data;
-            // Update your UI state to reflect user's online status
+
             setUserStatuses(prev => ({
                 ...prev,
                 [userId]: status
@@ -44,18 +44,22 @@ function SideBar({ onChatSelect }) {
         // Handle page close/refresh
         window.addEventListener('beforeunload', handleBeforeUnload);
 
+        // Set initial online status when component mounts
+        socket.emit('user_status_change', {
+            userId: currentUserId,
+            status: 'online'
+        });
+
         // Handle component unmount
         return () => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
-            // Also handle cleanup when component unmounts
             socket.emit('user_status_change', {
                 userId: currentUserId,
                 status: 'offline'
             });
             socket.disconnect();
         };
-    }, []);
-    //  console.log(user_status)
+    }, [currentUserId]);
     useEffect(() => {
         fetch('/chat/show')
             .then(response => response.json())

@@ -10,6 +10,17 @@ function ProfileCard() {
     const handleClose = () => {
         navigate(-1);
     }
+    const formatDate = (dateString) => {
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    }
 
     useEffect(() => {
         const fetchData = async () => {
@@ -61,32 +72,36 @@ function ProfileCard() {
                     <img src={`http://localhost:3001/public/${user.profile_picture}`} alt="" />
                 </div>
                 <div className={style.info}>
-                   <table>
-                    <th>
-                        <tr>
-                            <td>Username</td>
-                            <td>{user.username}</td>
-                        </tr>
-                        <tr>
-                            <td>Email</td>
-                            <td>{user.email}</td>
-                        </tr>
-                        <tr>
-                            <td>Phone</td>
-                            <td>+251-{user.Tel}</td>
-                        </tr>
-                        <tr>
-                            <td>Password</td>
-                            <td>{user.password}</td>
-                        </tr>
-                          <tr>
-                            <td>Created at</td>
-                            <td>{user.createdAt}</td>
-                        </tr>
-                    </th>
-                   </table>
+                    <table>
+                        <th>
+                            <tr>
+                                <td>Username</td>
+                                <td>{user.username}</td>
+                            </tr>
+                            <tr>
+                                <td>Email</td>
+                                <td>{user.email}</td>
+                            </tr>
+                            <tr>
+                                <td>Phone</td>
+                                <td>+251-{user.Tel}</td>
+                            </tr>
+                            {sessionStorage.getItem("auth_id") === id ?
+
+                                (<tr>
+                                    <td>Password</td>
+                                    <td>{user.password}</td>
+                                </tr>) : ("")
+
+                            }
+                            <tr>
+                                <td>Created at</td>
+                                <td>{user.createdAt ? formatDate(user.createdAt) : ''}</td>
+                            </tr>
+                        </th>
+                    </table>
                 </div>
-                
+
             </div>
         </div>
     )

@@ -91,6 +91,13 @@ const startServer = async () => {
                 socket.to(chatId).emit('receive message', message);
                 console.log(`Message sent to chat ${chatId}: ${msg}`);
             });
+
+            
+    socket.on('file share', (fileMessage) => {
+        // Broadcast the file to all users in the chat room except sender
+        socket.to(fileMessage.chatId).emit('receive file', fileMessage);
+    });
+
             // Handle disconnection
             socket.on('disconnect', () => {
                 // Find user id associated with this socket
