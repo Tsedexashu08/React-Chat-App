@@ -70,7 +70,6 @@ const startServer = async () => {
 
             socket.on("user_connected", (userId) => {
                 onlineUsers.set(userId, socket.id);
-                // Broadcasting to all z clients that user is online
                 io.emit("user_status", {
                     userId: userId,
                     status: "online"
@@ -81,10 +80,9 @@ const startServer = async () => {
                 socket.join(chatId);
                 console.log(`User ${socket.id} joined chat ${chatId}`);
             });
-
             socket.on('chat message', ({ chatId, msg }) => {
                 const message = {
-                    sender_id: socket.userId, // Include sender_id
+                    sender_id: socket.userId, // Ensure this is set correctly
                     content: msg,
                     timestamp: new Date().toISOString()
                 };
@@ -92,11 +90,11 @@ const startServer = async () => {
                 console.log(`Message sent to chat ${chatId}: ${msg}`);
             });
 
-            
-    socket.on('file share', (fileMessage) => {
-        // Broadcast the file to all users in the chat room except sender
-        socket.to(fileMessage.chatId).emit('receive file', fileMessage);
-    });
+
+            socket.on('file share', (fileMessage) => {
+                // Broadcast the file to all users in the chat room except sender
+                socket.to(fileMessage.chatId).emit('receive file', fileMessage);
+            });
 
             // Handle disconnection
             socket.on('disconnect', () => {

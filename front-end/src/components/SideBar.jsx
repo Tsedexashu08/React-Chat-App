@@ -8,10 +8,7 @@ function SideBar({ onChatSelect }) {
     const [chats, setChats] = useState([]);
     const currentUserId = parseInt(sessionStorage.getItem('auth_id'), 10);
     const [chatIds, setChatIds] = useState({});
-    const [chat, setChat] = useState({});
-    const [user_status, setUserStatuses] = useState({})
-
-
+    const [user_status, setUserStatuses] = useState({});
 
     const getChatId = (user1Id, user2Id) => {
         return user1Id < user2Id ? `${user1Id}-${user2Id}` : `${user2Id}-${user1Id}`;
@@ -20,18 +17,22 @@ function SideBar({ onChatSelect }) {
     useEffect(() => {
         const socket = io("http://localhost:3001");
 
-
         socket.emit("user_connected", currentUserId);
-
 
         socket.on("user_status", (data) => {
             const { userId, status } = data;
-
             setUserStatuses(prev => ({
                 ...prev,
                 [userId]: status
             }));
         });
+
+    
+        socket.emit('user_status_change', {
+            userId: currentUserId,
+            status: 'online'
+        });
+
         const handleBeforeUnload = () => {
             // Emit offline status before disconnecting
             socket.emit('user_status_change', {
@@ -40,15 +41,6 @@ function SideBar({ onChatSelect }) {
             });
             socket.disconnect();
         };
-
-        // Handle page close/refresh
-        window.addEventListener('beforeunload', handleBeforeUnload);
-
-        // Set initial online status when component mounts
-        socket.emit('user_status_change', {
-            userId: currentUserId,
-            status: 'online'
-        });
 
         // Handle component unmount
         return () => {
@@ -60,6 +52,7 @@ function SideBar({ onChatSelect }) {
             socket.disconnect();
         };
     }, [currentUserId]);
+
     useEffect(() => {
         fetch('/chat/show')
             .then(response => response.json())
@@ -71,12 +64,10 @@ function SideBar({ onChatSelect }) {
                 data.forEach(chat => {
                     const chatId = getChatId(currentUserId, chat.user_id);
                     newChatIds[chat.user_id] = chatId;
-                    console.log(`Chat ID for user ${chat.user_id}: ${chatId}`);
                 });
                 setChatIds(prevChatIds => ({ ...prevChatIds, ...newChatIds }));
             })
             .catch(error => console.error('Error fetching chats:', error));
-
     }, [currentUserId]);
 
     return (
@@ -91,7 +82,6 @@ function SideBar({ onChatSelect }) {
                     chatId={chatIds[chat.user_id]}
                     onSelect={() => { onChatSelect() }}
                     onlineStatus={user_status[chat.user_id] || "offline"}
-
                 />
             ))}
         </div>

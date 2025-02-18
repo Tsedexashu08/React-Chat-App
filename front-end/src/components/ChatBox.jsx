@@ -44,6 +44,33 @@ function ChatBox() {
         }
     }, [setMessages]);
 
+    const sendMessage = async (e) => {
+        e.preventDefault();
+        if (msg.trim() && socket) {
+            try {
+                // Save message to database first
+                const savedMessage = await SaveMessage();
+
+                // Emit through socket
+                socket.emit('chat message', { chatId, msg });
+
+                // Only update UI if message was saved successfully
+                if (savedMessage && !messages.some(message => message.content === msg && message.sender_id === user1Id)) {
+                    setMessages(prevMessages => [...prevMessages, {
+                        sender_id: user1Id,
+                        content: msg
+                    }]);
+                }
+
+                // Clear input
+                setMsg("");
+            } catch (error) {
+                console.error('Error sending message:', error);
+            }
+        }
+    };
+
+
     useEffect(() => {
         const newSocket = io.connect(SOCKET_URL);
         setSocket(newSocket);
@@ -66,29 +93,22 @@ function ChatBox() {
         });
 
         startChat(userId).then(() => {
-            GetChatMessages(chatRoomId); // Call after chat room ID is set
+            GetChatMessages(chatRoomId);
         });
 
         newSocket.emit("join chat", chatId);
 
+        // Only handle received messages from other users
         newSocket.on("receive message", (msg) => {
-            setMessages(prevMessages => [...prevMessages, msg]);
+            if (msg.sender_id !== user1Id) {
+                setMessages(prevMessages => [...prevMessages, msg]);
+            }
         });
 
         return () => {
             newSocket.disconnect();
         };
     }, [chatId, setMessages, userId, GetChatMessages, chatRoomId, user1Id]);
-
-    const sendMessage = async (e) => {
-        e.preventDefault();
-        if (msg.trim() && socket) {
-            socket.emit('chat message', { chatId, msg });
-            setMessages(prevMessages => [...prevMessages, { sender_id: user1Id, content: msg }]);
-            setMsg("");
-            SaveMessage();
-        }
-    };
 
     const startChat = useCallback(async (user2Id) => {
         try {
@@ -122,18 +142,23 @@ function ChatBox() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ user1Id: user1Id, user2Id: userId, msgContent: msg })
+                body: JSON.stringify({
+                    user1Id: user1Id,
+                    user2Id: userId,
+                    msgContent: msg
+                })
             });
 
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Failed to save message');
             }
 
             const data = await response.json();
-            console.log('Message sent:', data);
+            return data;
         } catch (error) {
             setError('Error saving message');
             console.error('Error:', error);
+            throw error;
         }
     };
     console.log(messages)
@@ -145,14 +170,14 @@ function ChatBox() {
         const file = event.target.files[0];
         if (!file) return;
 
-        // File size validation (5MB limit)
-        const maxSize = 5 * 1024 * 1024;
+        // File size validation (20MB limit)
+        const maxSize = 20 * 1024 * 1024;
         if (file.size > maxSize) {
             setError('File size must be less than 5MB');
             return;
         }
 
-        // Allowed file types
+
         const allowedTypes = [
             'image/jpeg',
             'image/png',
@@ -160,7 +185,8 @@ function ChatBox() {
             'application/pdf',
             'text/plain',
             'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'video/mp4'
         ];
 
         if (!allowedTypes.includes(file.type)) {
@@ -177,24 +203,21 @@ function ChatBox() {
                     data: reader.result
                 };
 
-                // Create file message object
                 const fileMessage = {
                     sender_id: user1Id,
                     chatId: chatId,
                     fileData: fileData
                 };
 
-                // Emit file through socket
                 socket.emit('file share', fileMessage);
 
-                // Add to local messages
                 setMessages(prevMessages => [...prevMessages, {
                     sender_id: user1Id,
                     content: `File: ${file.name}`,
                     fileData: fileData
                 }]);
 
-                // Save file message to database if needed...ti be done if i feel like it..
+                // maybe save file message to database if needed...to be done if i feel like it..
 
             };
 
@@ -258,23 +281,23 @@ function ChatBox() {
 
             <form onSubmit={sendMessage} className={style.chat_footer}>
                 <input
-                    type="text"
-                    placeholder="Type a message..."
-                    value={msg}
-                    onChange={(e) => setMsg(e.target.value)}
-                    disabled={loading}
-                />
-                <input
                     type="file"
                     onChange={handleFileUpload}
                     style={{ display: 'none' }}
                     id="file-upload"
                 />
                 <label htmlFor="file-upload">
-                    <span role="button" style={{ cursor: 'pointer', marginRight: '10px' }}>
+                    <span role="button" style={{ cursor: 'pointer', marginRight: '10px', fontSize: '24px' }}>
                         📎
                     </span>
                 </label>
+                <input
+                    type="text"
+                    placeholder="Type a message..."
+                    value={msg}
+                    onChange={(e) => setMsg(e.target.value)}
+                    disabled={loading}
+                />
                 <button
                     type="submit"
                     style={{ color: "white", background: "transparent" }}
