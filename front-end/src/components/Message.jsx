@@ -7,6 +7,9 @@ import { data } from 'react-router-dom';
 function IncomingMessage({ children, userId, message }) {  
     const [profile_picture, setProfilePicture] = useState('')
 
+    // Only show message content if it's a string
+    const trimmedMessage = typeof message === 'string' ? message : children;
+
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -40,8 +43,7 @@ function IncomingMessage({ children, userId, message }) {
                 alt="user avatar"
             />
             <div className={style.message}>
-                {message} 
-                {children}
+                {trimmedMessage}
             </div>
         </div>
     );
@@ -49,12 +51,14 @@ function IncomingMessage({ children, userId, message }) {
 
 function OutgoingMessage({ children, message }) {  // Direct destructuring
     const currentUserProfilePicture = sessionStorage.getItem('auth_profilepic');
+    
+    // Only show message content if it's a string
+    const trimmedMessage = typeof message === 'string' ? message : children;
 
     return (
         <div className={style.outgoing_msg}>
             <div className={style.outgoing_message}>
-                {message}
-                {children}
+                {trimmedMessage}
             </div>
             <img
                 src={`http://localhost:3001/public/${currentUserProfilePicture}`}
@@ -66,3 +70,4 @@ function OutgoingMessage({ children, message }) {  // Direct destructuring
 }
 
 export { IncomingMessage, OutgoingMessage };
+
